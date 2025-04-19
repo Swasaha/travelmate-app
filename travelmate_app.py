@@ -85,7 +85,7 @@ st.markdown("🔖 <small>Made with ❤️ using Streamlit · <a href='https://gi
 
 # Save this version as a new file
 path = "/mnt/data/travelmate_app_makemytrip_style.py"
-with open(path, "w") as f:
+
     f.write(travelmate_mmt_style)
 
 path
