@@ -22,16 +22,36 @@ budget = st.sidebar.slider("💰 Select your total budget (in ₹)", 500, 5000, 
 trip_type = st.sidebar.selectbox("🌄 Choose type of destination", ['any', 'beach', 'mountain', 'heritage', 'hill station'])
 
 # 🔍 Filter based on input
+# ⏳ Number of days input
+days = st.sidebar.slider("📅 Number of travel days", 1, 10, 3)
+
+# 💰 Scale cost by days
+df['food_total'] = df['food_cost'] * days
+df['stay_total'] = df['stay_cost'] * days
+df['total_cost'] = df['food_total'] + df['stay_total'] + df['activity_cost']
+
+# 🔍 Filter destinations
 filtered_df = df[df['total_cost'] <= budget]
 if trip_type != 'any':
     filtered_df = filtered_df[filtered_df['type'] == trip_type]
 
-# 📊 Show Results
-st.subheader(f"📌 Places you can visit under ₹{budget}")
+# 🎯 Display results
+st.subheader(f"📌 Recommended Trips under ₹{budget} for {days} day(s)")
+
 if not filtered_df.empty:
-    st.dataframe(filtered_df[['destination', 'state', 'type', 'total_cost']])
+    for _, row in filtered_df.iterrows():
+        st.markdown(f"### 🏞️ {row['destination']} ({row['state']})")
+        st.image(row['image_url'], use_column_width=True, caption=row['type'].capitalize())
+        st.markdown(f"""
+        - 💵 **Total Cost**: ₹{int(row['total_cost'])}  
+        - 🍽️ Food (₹{row['food_cost']}/day): ₹{int(row['food_total'])}  
+        - 🏨 Stay (₹{row['stay_cost']}/day): ₹{int(row['stay_total'])}  
+        - 🎡 Activities: ₹{int(row['activity_cost'])}  
+        """)
+        st.markdown("---")
 else:
-    st.warning("😔 No destinations found within this budget. Try increasing it or choosing another type.")
+    st.warning("No destinations found. Try adjusting your filters.")
+
 
 # 📈 Cost Breakdown Chart
 if not filtered_df.empty:
