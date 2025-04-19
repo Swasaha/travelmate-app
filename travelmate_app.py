@@ -39,9 +39,9 @@ if trip_type != 'any':
 st.subheader(f"📌 Recommended Trips under ₹{budget} for {days} day(s)")
 
 if not filtered_df.empty:
+    st.subheader(f"📌 Recommended Trips under ₹{budget} for {days} day(s)")
     for _, row in filtered_df.iterrows():
         st.markdown(f"### 🏞️ {row['destination']} ({row['state']})")
-        
         st.markdown(f"""
         - 💵 **Total Cost**: ₹{int(row['total_cost'])}  
         - 🍽️ Food (₹{row['food_cost']}/day): ₹{int(row['food_total'])}  
@@ -50,7 +50,31 @@ if not filtered_df.empty:
         """)
         st.markdown("---")
 else:
-    st.warning("No destinations match your preferences. Try adjusting filters.")
+    st.warning("😕 No destinations match your preferences.")
+    
+    # Smart Suggestion
+    st.markdown("### 🧠 Suggestions:")
+    min_cost = int(df[df['type'] == trip_type]['total_cost'].min()) if trip_type != 'any' else int(df['total_cost'].min())
+    extra_needed = min_cost - budget
+    
+    if extra_needed > 0:
+        st.info(f"💡 Try increasing your budget by ₹{extra_needed} to unlock more destinations.")
+    
+    # Partial fallback list
+    st.markdown("### 🔎 Nearby Matches You Can Consider:")
+    fallback_df = df[df['total_cost'] <= budget + 500]
+    if trip_type != 'any':
+        fallback_df = fallback_df[fallback_df['type'] == trip_type]
+    fallback_df = fallback_df.head(2)
+    
+    if not fallback_df.empty:
+        for _, row in fallback_df.iterrows():
+            st.markdown(f"#### 🌄 {row['destination']} ({row['state']}) – ₹{int(row['total_cost'])}")
+            st.write(f"- Type: {row['type']}")
+            st.write(f"- Food: ₹{row['food_cost']}/day | Stay: ₹{row['stay_cost']}/day | Activities: ₹{row['activity_cost']}")
+            st.markdown("---")
+    else:
+        st.info("🧳 No close matches found even with a ₹500 stretch.")
 
 
 # 📈 Cost Breakdown Chart
