@@ -83,9 +83,4 @@ st.markdown("---")
 st.markdown("🔖 <small>Made with ❤️ using Streamlit · <a href='https://github.com/Swasaha/travelmate-app' target='_blank'>View Source on GitHub</a></small>", unsafe_allow_html=True)
 '''
 
-# Save this version as a new file
-path = "/mnt/data/travelmate_app_makemytrip_style.py"
 
-    f.write(travelmate_mmt_style)
-
-path
