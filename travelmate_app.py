@@ -41,12 +41,13 @@ st.subheader(f"📌 Recommended Trips under ₹{budget} for {days} day(s)")
 if not filtered_df.empty:
     for _, row in filtered_df.iterrows():
         st.markdown(f"### 🏞️ {row['destination']} ({row['state']})")
-       if 'image_url' in row and pd.notna(row['image_url']):
-    st.image(row['image_url'], use_column_width=True, caption=row['type'].capitalize())
+       image_link = row.get('image_url', None)
+if pd.notna(image_link):
+    st.image(image_link, use_column_width=True, caption=row['type'].capitalize())
 else:
     st.warning(f"No image available for {row['destination']}.")
 
-        st.markdown(f"""
+            st.markdown(f"""
         - 💵 **Total Cost**: ₹{int(row['total_cost'])}  
         - 🍽️ Food (₹{row['food_cost']}/day): ₹{int(row['food_total'])}  
         - 🏨 Stay (₹{row['stay_cost']}/day): ₹{int(row['stay_total'])}  
