@@ -1,64 +1,60 @@
-# Generate the updated Streamlit code that resembles the "MakeMyTrip"-style layout with destination cards and images
+# Generate a final clean version of the travel recommendation app with styled layout, explanations, and real system feel
 
-travelmate_mmt_style = '''
+final_app_code = '''
 import streamlit as st
 import pandas as pd
 
-# Load data
+# Page settings
+st.set_page_config(page_title="TravelMate: Travel Recommendation System", layout="wide")
+
+# Load dataset
 @st.cache_data
 def load_data():
-    df = pd.read_csv("travel_data.csv")
-    return df
+    return pd.read_csv("travel_data.csv")
 
 df = load_data()
 
-# Streamlit page config
-st.set_page_config(page_title="TravelMate - Explore India", layout="wide")
-
-# UI Title
-st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🌍 TravelMate: Explore India on a Budget</h1>", unsafe_allow_html=True)
-st.markdown("##### 🔒 Plan your next trip based on your budget and travel style.")
+# Title and Introduction
+st.markdown("<h1 style='text-align: center; color: #009999;'>🌐 TravelMate: Intelligent Travel Recommendation System</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>An interactive system that recommends Indian destinations based on your budget, preferences, and trip duration.</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Sidebar filters
-st.sidebar.header("📘 Enter Your Travel Preferences")
-budget = st.sidebar.slider("💰 Select your total budget (in ₹)", 500, 5000, 1500)
-trip_type = st.sidebar.selectbox("🏝️ Choose type of destination", ['any', 'beach', 'mountain', 'heritage', 'hill station'])
-days = st.sidebar.slider("📅 Number of travel days", 1, 10, 3)
+# Sidebar inputs
+st.sidebar.header("🧭 Plan Your Journey")
+budget = st.sidebar.slider("💸 Your Total Budget (₹)", 500, 5000, 1500)
+trip_type = st.sidebar.selectbox("🏖️ Select Trip Type", ['any', 'beach', 'mountain', 'heritage', 'hill station'])
+days = st.sidebar.slider("📆 Number of Days", 1, 10, 3)
 
-# Cost scaling
+# Calculate total cost for days
 df['food_total'] = df['food_cost'] * days
 df['stay_total'] = df['stay_cost'] * days
 df['total_cost'] = df['food_total'] + df['stay_total'] + df['activity_cost']
 
-# Filter
+# Filter logic
 filtered_df = df[df['total_cost'] <= budget]
 if trip_type != 'any':
     filtered_df = filtered_df[filtered_df['type'] == trip_type]
 
-# Main Output
+# Main recommendations
+st.markdown(f"<h3 style='color: #336699;'>🎯 Recommended Destinations under ₹{budget} for {days} day(s)</h3>", unsafe_allow_html=True)
+
 if not filtered_df.empty:
-    st.subheader(f"📌 Recommended Trips under ₹{budget} for {days} day(s)")
     cols = st.columns(3)
-    for index, (_, row) in enumerate(filtered_df.iterrows()):
-        with cols[index % 3]:
-            st.image(row.get('image_url', 'https://via.placeholder.com/300x200?text=Image+Not+Available'), use_column_width=True)
-            st.markdown(f"<h4>{row['destination']}, <span style='font-weight:normal'>{row['state']}</span></h4>", unsafe_allow_html=True)
-            st.markdown(f"🧳 **Total Cost:** ₹{int(row['total_cost'])}")
-            st.markdown(f"🍽️ **Food** (₹{row['food_cost']}/day): ₹{int(row['food_total'])}")
-            st.markdown(f"🏨 **Stay** (₹{row['stay_cost']}/day): ₹{int(row['stay_total'])}")
-            st.markdown(f"🎡 **Activities**: ₹{int(row['activity_cost'])}")
+    for idx, (_, row) in enumerate(filtered_df.iterrows()):
+        with cols[idx % 3]:
+            st.markdown(f"<h4>{row['destination']}</h4>", unsafe_allow_html=True)
+            st.write(f"📍 **State**: {row['state']}")
+            st.write(f"🧳 **Type**: {row['type']}")
+            st.write(f"💰 **Total Estimated Cost**: ₹{int(row['total_cost'])}")
+            st.write(f"🍛 Food ({row['food_cost']} per day): ₹{int(row['food_total'])}")
+            st.write(f"🏨 Stay ({row['stay_cost']} per day): ₹{int(row['stay_total'])}")
+            st.write(f"🎟️ Activities: ₹{row['activity_cost']}")
             st.markdown("---")
 else:
-    st.warning("😕 No destinations match your preferences.")
-    
-    st.markdown("### 🧠 Suggestions:")
-    min_cost = int(df[df['type'] == trip_type]['total_cost'].min()) if trip_type != 'any' else int(df['total_cost'].min())
-    extra_needed = min_cost - budget
-    if extra_needed > 0:
-        st.info(f"💡 Try increasing your budget by ₹{extra_needed} to unlock more destinations.")
+    st.warning("⚠️ No destinations match your current selection. Try adjusting your budget or trip type.")
 
-    st.markdown("### 🔎 Nearby Matches You Can Consider:")
+    # Show fallback suggestions
+    st.markdown("### 🧠 Closest Matches")
     fallback_df = df[df['total_cost'] <= budget + 500]
     if trip_type != 'any':
         fallback_df = fallback_df[fallback_df['type'] == trip_type]
@@ -66,21 +62,24 @@ else:
 
     if not fallback_df.empty:
         cols = st.columns(3)
-        for index, (_, row) in enumerate(fallback_df.iterrows()):
-            with cols[index % 3]:
-                st.image(row.get('image_url', 'https://via.placeholder.com/300x200?text=Image+Not+Available'), use_column_width=True)
-                st.markdown(f"<h4>{row['destination']}, <span style='font-weight:normal'>{row['state']}</span></h4>", unsafe_allow_html=True)
-                st.markdown(f"💵 **Total Cost:** ₹{int(row['total_cost'])}")
-                st.markdown(f"🍽️ **Food**: ₹{row['food_cost']}/day")
-                st.markdown(f"🏨 **Stay**: ₹{row['stay_cost']}/day")
-                st.markdown(f"🎡 **Activities**: ₹{row['activity_cost']}")
+        for idx, (_, row) in enumerate(fallback_df.iterrows()):
+            with cols[idx % 3]:
+                st.markdown(f"<h4>{row['destination']}</h4>", unsafe_allow_html=True)
+                st.write(f"📍 **State**: {row['state']}")
+                st.write(f"🧳 **Type**: {row['type']}")
+                st.write(f"💸 **Estimated Cost**: ₹{int(row['total_cost'])}")
                 st.markdown("---")
     else:
-        st.info("🧳 No close matches found even with a ₹500 stretch.")
+        st.info("🚫 No similar places found even with a ₹500 stretch.")
 
 # Footer
 st.markdown("---")
-st.markdown("🔖 <small>Made with ❤️ using Streamlit · <a href='https://github.com/Swasaha/travelmate-app' target='_blank'>View Source on GitHub</a></small>", unsafe_allow_html=True)
+st.markdown("<small>🔗 Built with ❤️ using Streamlit · Explore India smartly</small>", unsafe_allow_html=True)
 '''
 
+# Save to file
+file_path = "/mnt/data/travelmate_final_recommendation_app.py"
+with open(file_path, "w") as f:
+    f.write(final_app_code)
 
+file_path
